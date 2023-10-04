@@ -1,0 +1,64 @@
+- notebook: linear-classification
+  testfile: test_linear_classification
+  deadline: 2023-12-19
+  tests:
+    - name: TestBatchLoader
+      points: 3
+    - name: TestPreprocess
+      points: 1
+      params:
+        preprocess_fn: preprocess
+    - name: TestInit
+      points: 1
+      params:
+        init_params_fn: init_params
+    - name: TestCalcLinearScores
+      points: 1
+      params:
+        calc_linear_scores_fn: calc_linear_scores
+    - name: TestSoftmaxCrossEntropy
+      points: 2
+      params:
+        softmax_cross_entropy_fn: softmax_cross_entropy
+    - name: TestAccuracy
+      points: 1
+      params:
+        accuracy_fn: accuracy
+    - name: TestSoftmaxCrossEntropyGradients
+      points: 5
+      params:
+        softmax_cross_entropy_gradients_fn: softmax_cross_entropy_gradients
+    - name: TestUpdateParamInplace
+      points: 1
+      params:
+        update_param_inplace_fn: update_param_inplace
+    - name: TestTrainStepSoftmax
+      points: 2
+      params:
+        train_step_softmax_fn: train_step_softmax
+    - name: TestValStep
+      points: 2
+      params:
+        val_step_fn: val_step
+        loss_fn: softmax_cross_entropy
+    - name: TestSoftmaxValAccuracy
+      required: false
+      points: 3
+    - name: TestHingeLoss
+      required: false
+      points: 5
+      params:
+        hinge_loss_fn: hinge_loss
+    - name: TestHingeLossGradients
+      required: false
+      points: 8
+      params:
+        hinge_loss_gradients_fn: hinge_loss_gradients
+    - name: TestTrainStepSVM
+      required: false
+      points: 2
+      params:
+        train_step_svm_fn: train_step_svm
+    - name: TestSVMValAccuracy
+      required: false
+      points: 3
