@@ -20,3 +20,7 @@ Podmínky odevzdávání úloh
 ### 2. Zpětná propagace
   - notebook: [backpropagation.ipynb](assignments/backpropagation.ipynb)
   - **deadline: 19.12.2023**
+
+### 3. Modularizace základních operací
+  - notebook [neural-library.ipynb](assignments/neural-library.ipynb)
+  - **deadline: 19.12.2023**

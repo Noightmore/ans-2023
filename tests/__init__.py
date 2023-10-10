@@ -106,3 +106,17 @@ class ANSTestCase(unittest.TestCase):
                 err_str += f"\nExpected\n{expected}\n"
         if err_str:
             self.fail(msg=f"{msg}\n{err_str}")
+
+
+def randn_var(
+        *shape: int,
+        name: str = None,
+        mean: float = 0.,
+        std: float = 1.,
+        dtype=torch.float64,
+        requires_grad: bool = False
+) -> ans.autograd.Variable:
+    tensor = mean + std * torch.randn(*shape, dtype=dtype)
+    if requires_grad:
+        tensor = tensor.requires_grad_()
+    return ans.autograd.Variable(tensor, name=name)

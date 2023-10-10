@@ -247,3 +247,79 @@ class Variable:
         ########################################
 
         return dot
+
+
+def numeric_gradient(
+        func: Callable[[torch.Tensor], torch.Tensor],
+        input: torch.Tensor,
+        dout: torch.Tensor,
+        eps: Optional[float] = None
+) -> torch.Tensor:
+    if eps is None:
+        eps = max(1e-6, 0.01 * input.std())
+    if not torch.is_floating_point(input):
+        raise TypeError(input.dtype)
+    input = input.contiguous()
+    flat = input.view(-1)  # shares memory
+    grad = torch.zeros_like(flat)
+    for i in range(flat.shape[0]):
+        inp_i = flat[i].item()  # must be deep-copied, since `flat[i]` returns a view to the i-th element
+        flat[i] = inp_i + eps
+        pos = func(input)
+        flat[i] = inp_i - eps
+        neg = func(input)
+        flat[i] = inp_i  # restore
+        grad[i] = torch.sum((pos - neg) * dout) / (2. * eps)
+    return grad.reshape(input.shape)
+
+
+def gradcheck(
+        func: Callable[[Any, ...], Variable],
+        inputs: tuple[Union[torch.Tensor, Variable], ...],
+        params: Optional[dict[str, Any]] = None,
+        dout: Optional[torch.Tensor] = None,
+        eps: Optional[float] = None,
+        rtol: float = 1e-3,
+        atol: float = 1e-5,
+        verbose: bool = True
+) -> bool:
+    if params is None:
+        params = {}
+
+    # Analytic gradients
+    output = func(*inputs, **params)
+    for input in inputs:
+        if isinstance(input, Variable):
+            input.grad = None
+    if dout is None:
+        dout = torch.randn_like(output.data)
+    output.backprop(dout=dout)
+    grads_ana = [i.grad for i in inputs if isinstance(i, Variable)]
+
+    # Numeric gradients
+    ok = True
+    for i, input in enumerate(inputs):
+        if not isinstance(input, Variable):
+            continue
+        grad_num = numeric_gradient(lambda _: func(*inputs, **params).data, input.data, dout, eps=eps)
+        abs_err = torch.abs(grads_ana[i] - grad_num)
+        rel_err = abs_err / torch.abs(grad_num + 1e-6)
+        allowed = atol + rtol * torch.abs(grad_num)
+        passes = torch.all(abs_err < allowed)  # torch.allclose
+        ok = ok and passes.item()
+        if verbose:
+            input_name = input.name if input.name is not None else f"input{i}"
+            if passes:
+                print(f"d{input_name} ok: rel_err={rel_err.max().item():.3e}, abs_err={abs_err.max().item():.3e}")
+            else:
+                print(f"\033[31md{input_name} FAIL: "  # begin red color
+                      f"rel_err={rel_err.max().item():.3e}, abs_err={abs_err.max().item():.3e}\n")
+                print('Analytic gradient: ')
+                print(grads_ana[i], '\n')
+                print('Numeric gradient: ')
+                print(grad_num, '\n')
+                print('Relative error: ')
+                print(rel_err)
+                print('\033[30m')  # end red color
+
+    return ok

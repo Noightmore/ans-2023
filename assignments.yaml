@@ -87,3 +87,19 @@
         z: z
         q: q
   
+  - notebook: neural-library
+  testfile: test_neural_library
+  deadline: 2023-12-19
+  tests:
+    - name: TestLinearFunction
+      points: 5
+    - name: TestSigmoidFunction
+      points: 5
+    - name: TestSoftmaxCrossEntropyFunction
+      points: 8
+    - name: TestLinearModule
+      points: 3
+    - name: TestSigmoidModule
+      points: 1
+    - name: TestSoftmaxCrossEntropyModule
+      points: 1
