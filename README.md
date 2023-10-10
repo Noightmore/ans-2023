@@ -16,3 +16,7 @@ Podmínky odevzdávání úloh
   - Povinná část: Softmax, funkční klasifikace, validační skóre > 40 %
   - Nepovinná část: SVM
   - **deadline: 19.12.2023**
+
+### 2. Zpětná propagace
+  - notebook: [backpropagation.ipynb](assignments/backpropagation.ipynb)
+  - **deadline: 19.12.2023**

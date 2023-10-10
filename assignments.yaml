@@ -62,3 +62,28 @@
     - name: TestSVMValAccuracy
       required: false
       points: 3
+
+- notebook: backpropagation
+  testfile: test_backpropagation
+  deadline: 2023-12-19
+  tests:
+    - name: TestAdd
+      points: 2
+    - name: TestSub
+      points: 2
+    - name: TestMul
+      points: 2
+    - name: TestPow
+      points: 2
+    - name: TestTopologicalSort
+      points: 8
+    - name: TestBackprop
+      points: 8
+    - name: TestToGraphviz
+      required: false
+      points: 8
+      params:
+        w: w
+        z: z
+        q: q
+  
