@@ -43,7 +43,16 @@ class BatchLoader:
         #    2.1 `yield` rows of self.x (and self.y if it is not None) as indexed by the current batch of indices
         #    2.2 stop if there are no more batches
 
+        ids = torch.arange(self.x.shape[0])
+        if self.shuffle:
+            ids = torch.randperm(ids.shape[0])
 
+        for i in range(0, ids.shape[0], self.batch_size):
+            batch_ids = ids[i:i+self.batch_size]
+            if self.y is not None:
+                yield self.x[batch_ids, ...], self.y[batch_ids]
+            else:
+                yield self.x[batch_ids],
 
         # ENDTODO
         ########################################
