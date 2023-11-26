@@ -39,7 +39,14 @@ class Variable:
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        def grad_fn(dout: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+            return dout.data.clone(), dout.data.clone()
+
+        return Variable(
+            self.data + other.data,
+            parents=(self, other),
+            grad_fn=grad_fn
+        )
 
         # ENDTODO
         ########################################
@@ -57,7 +64,14 @@ class Variable:
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        def grad_fn(dout: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+            return dout.data.clone(), -dout.data.clone()
+
+        return Variable(
+            self.data - other.data,
+            parents=(self, other),
+            grad_fn=grad_fn
+        )
 
         # ENDTODO
         ########################################
@@ -75,7 +89,14 @@ class Variable:
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        def grad_fn(dout: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+            return other.data * dout, self.data * dout
+
+        return Variable(
+            self.data * other.data,
+            parents=(self, other),
+            grad_fn=grad_fn
+        )
 
         # ENDTODO
         ########################################
@@ -93,7 +114,14 @@ class Variable:
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        def grad_fn(dout: torch.Tensor) -> tuple[torch.Tensor]:
+            return power * dout * (self.data**(power - 1)),
+
+        return Variable(
+            self.data**power,
+            parents=self,
+            grad_fn=grad_fn
+        )
 
         # ENDTODO
         ########################################
@@ -153,12 +181,22 @@ class Variable:
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        visited = set()
+
+        def topological_sort(node):
+            visited.add(node)
+            parents = list(node.parents) if type(node.parents) == tuple else [node.parents]
+            for neighbor in parents:
+                if neighbor not in visited:
+                    topological_sort(neighbor)
+            predecessors.append(node)
+
+        topological_sort(self)
+
+        return predecessors
 
         # ENDTODO
         ########################################
-
-        return predecessors
 
     def backprop(self, dout: Optional[torch.Tensor] = None) -> None:
         """
@@ -173,7 +211,22 @@ class Variable:
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        if dout is None:
+            dout = torch.ones(self.data.size())
+
+        nodes = self.predecessors()[::-1]
+        nodes[0].grad = dout
+
+        while nodes:
+            node = nodes.pop(0)
+            if not node.grad_fn:
+                continue
+
+            grads = list(node.grad_fn(node.grad)) if type(node.grad_fn(node.grad)) == tuple else [node.grad_fn(node.grad)]
+            parents = list(node.parents) if type(node.parents) == tuple else [node.parents]
+
+            for grad, parent in zip(grads, parents):
+                parent.grad = grad if parent.grad is None else parent.grad + grad
 
         # ENDTODO
         ########################################
@@ -240,8 +293,6 @@ class Variable:
 
         ########################################
         # TODO: implement
-
-        raise NotImplementedError
 
         # ENDTODO
         ########################################
