@@ -232,6 +232,8 @@ class Variable:
         ########################################
 
     def to_graphviz(self, show_data: bool = False) -> graphviz.Digraph:
+        global func_uid
+
         def get_node_info(
                 node: 'Variable',
                 default_name: str = '',
@@ -293,6 +295,26 @@ class Variable:
 
         ########################################
         # TODO: implement
+
+        nodes = self.predecessors()[::-1]
+
+        while nodes:
+            node = nodes.pop(0)
+            node_uid, node_label = get_node_info(node)
+            dot.node(node_uid, label=node_label, shape='record')
+
+            if node.grad_fn:
+                func_uid, func_label = get_func_info(node)
+                dot.node(func_uid, func_label)
+                dot.edge(func_uid, node_uid)
+
+            parents = list(node.parents) if type(node.parents) == tuple else [node.parents]
+
+            for parent in parents:
+                parent_uid, parent_label = get_node_info(parent)
+                dot.node(parent_uid, label=parent_label, shape='record')
+                dot.edge(parent_uid, func_uid)
+
 
         # ENDTODO
         ########################################
