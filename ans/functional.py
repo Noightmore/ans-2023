@@ -54,8 +54,8 @@ class Linear(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
-
+        output = torch.mm(input, weight) + bias
+        cache = (input, weight)
         # ENDTODO
         ########################################
 
@@ -74,7 +74,10 @@ class Linear(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        input, weight = cache
+        dweight = torch.mm(input.t(), doutput)
+        dbias = torch.sum(doutput, axis=0)
+        dinput = torch.mm(doutput, weight.t())
 
         # ENDTODO
         ########################################
@@ -97,7 +100,8 @@ class Sigmoid(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        output = 1 / (1 + torch.exp(-input))
+        cache = (output,)
 
         # ENDTODO
         ########################################
@@ -117,7 +121,8 @@ class Sigmoid(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        input = cache[0]
+        dinput = doutput * input * (1 - input)
 
         # ENDTODO
         ########################################
