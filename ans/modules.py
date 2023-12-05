@@ -94,7 +94,10 @@ class Linear(Module):
         ########################################
         # TODO: initialize weight and bias
 
-        raise NotImplementedError
+        a = 1/(num_in ** (1/2))
+        b = -1/(num_in ** (1/2))
+        self.weight = Variable((a - b) * torch.rand(num_in, num_out) + b)
+        self.bias = Variable(torch.zeros(num_out))
 
         # ENDTODO
         ########################################
@@ -103,7 +106,7 @@ class Linear(Module):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        return ans.functional.Linear.apply(x, self.weight, self.bias)
 
         # ENDTODO
         ########################################
@@ -118,7 +121,7 @@ class Sigmoid(Module):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        return ans.functional.Sigmoid.apply(x)
 
         # ENDTODO
         ########################################
@@ -133,7 +136,7 @@ class SoftmaxCrossEntropy(Module):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        return ans.functional.SoftmaxCrossEntropy.apply(x,y)
 
         # ENDTODO
         ########################################

@@ -146,7 +146,11 @@ class SoftmaxCrossEntropy(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        maxs, _ = torch.max(scores, dim=1)
+        scores = scores - maxs.unsqueeze(1)
+        scoresOH = scores[torch.arange(scores.shape[0]), targets]
+        output = torch.mean(-scoresOH + torch.logsumexp(scores, dim=1))
+        cache = (scores, targets)
 
         # ENDTODO
         ########################################
@@ -166,7 +170,11 @@ class SoftmaxCrossEntropy(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        scores, targets = cache
+        exp_scores = torch.exp(scores)
+        dscores = exp_scores / torch.sum(exp_scores, dim=1).unsqueeze(1)
+        dscores[torch.arange(targets.shape[0]), targets] -= 1
+        dscores = dscores * doutput / scores.shape[0]
 
         # ENDTODO
         ########################################
