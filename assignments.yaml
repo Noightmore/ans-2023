@@ -87,7 +87,7 @@
         z: z
         q: q
   
-  - notebook: neural-library
+- notebook: neural-library
   testfile: test_neural_library
   deadline: 2023-12-19
   tests:
@@ -103,3 +103,40 @@
       points: 1
     - name: TestSoftmaxCrossEntropyModule
       points: 1
+
+- notebook: multilayer-perceptron
+  testfile: test_multilayer_perceptron
+  deadline: 2024-01-02
+  tests:
+    - name: TestSGD
+      points: 5
+    - name: TestPreprocess
+      points: 1
+      params:
+        preprocess_fn: preprocess
+    - name: TestAccuracy
+      points: 1
+      params:
+        accuracy_fn: accuracy
+    - name: TestSteps
+      points: 3
+      params:
+        train_step_fn: train_step
+        val_step_fn: val_step
+    - name: TestBasicMLPAccuracy
+      points: 8
+    - name: TestReLU
+      required: false
+      points: 3
+    - name: TestBatchNorm1d
+      required: false
+      points: 8
+    - name: TestDropout
+      required: false
+      points: 5
+    - name: TestAdam
+      required: false
+      points: 5
+    - name: TestAdvancedMLPAccuracy
+      required: false
+      points: 8

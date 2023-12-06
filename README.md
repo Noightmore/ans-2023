@@ -24,3 +24,9 @@ Podmínky odevzdávání úloh
 ### 3. Modularizace základních operací
   - notebook [neural-library.ipynb](assignments/neural-library.ipynb)
   - **deadline: 19.12.2023**
+
+### 4. Vícevrstvý perceptron
+  - notebook [multilayer-perceptron.ipynb](assignments/multilayer-perceptron.ipynb)
+  - Povinná část: SGD, validační skóre > 50 %
+  - Nepovinná část: preprocessing, ReLU, BatchNorm1d, Dropout, Adam, validační skóre > 55 %
+  - **deadline: 2.1.2024**
