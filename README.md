@@ -30,3 +30,9 @@ Podmínky odevzdávání úloh
   - Povinná část: SGD, validační skóre > 50 %
   - Nepovinná část: preprocessing, ReLU, BatchNorm1d, Dropout, Adam, validační skóre > 55 %
   - **deadline: 2.1.2024**
+
+### 5. Konvoluční síť
+  - notebook [convolutional-network.ipynb](assignments/convolutional-network.ipynb)
+  - Povinná část: konvoluce, ReLU, max-pooling, reshape, VGG7, validační skóre > 75 %
+  - Nepovinná část: augmentace, 2d batch normalizace, ResNet
+  - **deadline: 9.1.2024**
