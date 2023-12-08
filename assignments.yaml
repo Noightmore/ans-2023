@@ -87,7 +87,7 @@
         z: z
         q: q
   
-  - notebook: neural-library
+- notebook: neural-library
   testfile: test_neural_library
   deadline: 2023-12-19
   tests:
@@ -103,3 +103,100 @@
       points: 1
     - name: TestSoftmaxCrossEntropyModule
       points: 1
+
+- notebook: multilayer-perceptron
+  testfile: test_multilayer_perceptron
+  deadline: 2024-01-02
+  tests:
+    - name: TestSGD
+      points: 5
+    - name: TestPreprocess
+      points: 1
+      params:
+        preprocess_fn: preprocess
+    - name: TestAccuracy
+      points: 1
+      params:
+        accuracy_fn: accuracy
+    - name: TestSteps
+      points: 3
+      params:
+        train_step_fn: train_step
+        val_step_fn: val_step
+    - name: TestBasicMLPAccuracy
+      points: 8
+    - name: TestReLU
+      required: false
+      points: 3
+    - name: TestBatchNorm1d
+      required: false
+      points: 8
+    - name: TestDropout
+      required: false
+      points: 5
+    - name: TestAdam
+      required: false
+      points: 5
+    - name: TestAdvancedMLPAccuracy
+      required: false
+      points: 8
+
+- notebook: convolutional-network
+  testfile: test_convolutional_network
+  deadline: 2023-01-10
+  tests:
+    - name: TestConv2dFunction
+      points: 8
+    - name: TestConv2dFunctionOptional
+      required: false
+      points: 5
+    - name: TestConv2dModule
+      points: 3
+    - name: TestReLU
+      points: 3
+    - name: TestMaxPool2dFunction
+      points: 8
+    - name: TestMaxPool2dModule
+      points: 1
+    - name: TestReshape
+      points: 3
+    - name: TestFlattenModule
+      points: 1
+    - name: TestVGG7
+      points: 5
+      params:
+        model_cls: VGG7
+    - name: TestAccuracy
+      points: 1
+      params:
+        accuracy_fn: accuracy
+    - name: TestSteps
+      required: false
+      points: 3
+      params:
+        train_step_fn: train_step
+        val_step_fn: val_step
+    - name: TestVGG7ValAccuracy
+      points: 5
+    - name: TestAugmentation
+      required: false
+      points: 2
+      params:
+        train_dataset: train_dataset_aug
+        val_dataset: val_dataset
+    - name: TestBatchNorm2d
+      required: false
+      points: 5
+    - name: TestVGG7BN
+      required: false
+      points: 3
+      params:
+        model_cls: VGG7BN
+    - name: TestResnet9
+      required: false
+      points: 5
+      params:
+        model_cls: ResNet9
+    - name: TestResnet9ValAccuracy
+      required: false
+      points: 5
