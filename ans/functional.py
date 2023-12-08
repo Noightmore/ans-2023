@@ -199,7 +199,8 @@ class ReLU(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        output = torch.where(input > 0, input, 0)
+        cache = output,
 
         # ENDTODO
         ########################################
@@ -219,7 +220,8 @@ class ReLU(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        input = cache[0]
+        dinput = torch.where(input > 0, doutput, 0)
 
         # ENDTODO
         ########################################
@@ -475,7 +477,14 @@ class Conv2d(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        output = torch.nn.functional.conv2d(input=input,
+                                            weight=weight,
+                                            bias=bias,
+                                            stride=stride,
+                                            padding=padding,
+                                            dilation=dilation,
+                                            groups=groups)
+        cache = (input, output, bias, weight, stride, padding, dilation, groups)
 
         # ENDTODO
         ########################################
@@ -495,7 +504,30 @@ class Conv2d(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        input, output, bias, weight, stride, padding, dilation, groups = cache
+        output_padding = 0
+
+        if stride > 1:
+            o_pad_h = int(input.shape[2] - (doutput.shape[2] - 1) * stride + 2 * padding - (weight.shape[2] - 1) * dilation - 1)
+            o_pad_w = int(input.shape[3] - (doutput.shape[3] - 1) * stride + 2 * padding - (weight.shape[3] - 1) * dilation - 1)
+            output_padding = (o_pad_h, o_pad_w)
+        dinput = torch.nn.functional.conv_transpose2d(input=doutput,
+                                                      weight=weight,
+                                                      stride=stride,
+                                                      padding=padding,
+                                                      dilation=dilation,
+                                                      output_padding=output_padding,
+                                                      groups=groups)
+
+        dbias = doutput.sum(dim=[0, 2, 3])
+        dweight = torch.nn.functional.conv2d(input=input.transpose(0, 1),
+                                             weight=doutput.transpose(0, 1),
+                                             stride=dilation,
+                                             padding=padding,
+                                             dilation=stride,
+                                             groups=groups).transpose(0, 1)
+        k = weight.shape[2]
+        dweight = dweight[:, :, 0:k, 0:k]
 
         # ENDTODO
         ########################################
@@ -520,7 +552,21 @@ class MaxPool2d(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        num_samples, num_channels, height, width = input.shape
+        input = input[:, :, 0:(height - height % window_size), :]
+        input = input[:, :, :, 0:(width - width % window_size)]
+
+        output = torch.reshape(input, (num_samples, num_channels,
+                                       input.shape[2]//window_size,
+                                       window_size, input.shape[3]//window_size, window_size))
+
+        output = output.transpose(3, 4)
+        output = torch.reshape(output, (num_samples, num_channels,
+                                        input.shape[2]//window_size,
+                                        input.shape[3]//window_size, window_size**2))
+
+        output, idx = torch.max(output, dim=4)
+        cache = ((num_samples, num_channels, height, width), window_size, idx, output)
 
         # ENDTODO
         ########################################
@@ -540,7 +586,24 @@ class MaxPool2d(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        input_shape, window_size, idx, output = cache
+
+        num_samples, num_channels, height, width = input_shape
+
+        dinput = torch.zeros(num_samples, num_channels, height//window_size,
+                             width//window_size, window_size ** 2,
+                             dtype=doutput.dtype).to(device=doutput.device)
+
+        dinput = dinput.scatter_(-1, idx.unsqueeze(-1), 1)
+        dinput[dinput == 1] = doutput.flatten()
+        dinput = torch.reshape(dinput, (num_samples, num_channels, height//window_size,
+                                        width//window_size, window_size, window_size))
+
+        dinput = dinput.transpose(3, 4)
+        dinput = torch.reshape(dinput, (num_samples, num_channels,
+                                        height - height % window_size, width - width%window_size))
+
+        dinput = torch.nn.functional.pad(dinput, (0, width-dinput.shape[3], 0, height-dinput.shape[2]))
 
         # ENDTODO
         ########################################

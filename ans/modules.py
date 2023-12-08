@@ -1,3 +1,4 @@
+import math
 from typing import Any, Optional
 
 import torch
@@ -70,6 +71,7 @@ class Module:
             elif isinstance(obj, Module):
                 for attr in dir(obj):
                     to(getattr(obj, attr))
+
         to(self)
         return self
 
@@ -94,8 +96,8 @@ class Linear(Module):
         ########################################
         # TODO: initialize weight and bias
 
-        a = 1/(num_in ** (1/2))
-        b = -1/(num_in ** (1/2))
+        a = 1 / (num_in ** (1 / 2))
+        b = -1 / (num_in ** (1 / 2))
         self.weight = Variable((a - b) * torch.rand(num_in, num_out) + b)
         self.bias = Variable(torch.zeros(num_out))
 
@@ -136,7 +138,7 @@ class SoftmaxCrossEntropy(Module):
         ########################################
         # TODO: implement
 
-        return ans.functional.SoftmaxCrossEntropy.apply(x,y)
+        return ans.functional.SoftmaxCrossEntropy.apply(x, y)
 
         # ENDTODO
         ########################################
@@ -151,7 +153,7 @@ class ReLU(Module):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        return ans.functional.ReLU.apply(x)
 
         # ENDTODO
         ########################################
@@ -277,7 +279,12 @@ class Conv2d(Module):
         # TODO: initialize weight and bias
         # if bias is True, then bias should be zeros, otherwise set to None
 
-        raise NotImplementedError
+        a = 1 / math.sqrt(in_channels * kernel_size ** 2)
+        b = -a
+        self.weight = Variable((a - b) * torch.rand(out_channels, in_channels, kernel_size, kernel_size) + b)
+        self.bias = Variable(torch.zeros(out_channels)) if bias else None
+
+        # raise NotImplementedError
 
         # ENDTODO
         ########################################
@@ -286,7 +293,9 @@ class Conv2d(Module):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        return ans.functional.Conv2d.apply(x, self.weight, self.bias, self.stride,
+                                           self.padding, self.dilation,
+                                           self.groups)
 
         # ENDTODO
         ########################################
@@ -303,7 +312,7 @@ class MaxPool2d(Module):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        return ans.functional.MaxPool2d.apply(x, self.window_size)
 
         # ENDTODO
         ########################################
