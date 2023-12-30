@@ -169,7 +169,7 @@ class Dropout(Module):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        return ans.functional.Dropout.apply(x, self.p, self.training)
 
         # ENDTODO
         ########################################
@@ -225,7 +225,10 @@ class BatchNorm1d(Module):
         # running_mean to zeros
         # running_var to ones
 
-        raise NotImplementedError
+        self.gamma = Variable(torch.ones(num_features) if affine else None)
+        self.beta = Variable(torch.zeros(num_features) if affine else None)
+        self.running_mean = torch.zeros(num_features)
+        self.running_var = torch.ones(num_features)
 
         # ENDTODO
         ########################################
@@ -234,7 +237,8 @@ class BatchNorm1d(Module):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        return ans.functional.BatchNorm1d.apply(x, self.gamma, self.beta, self.running_mean, self.running_var,
+                                                self.momentum, self.eps, self.training)
 
         # ENDTODO
         ########################################
