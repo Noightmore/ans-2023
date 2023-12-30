@@ -34,8 +34,8 @@ class SGD(Optimizer):
         ########################################
         # TODO: init _velocities to zeros
 
-        raise NotImplementedError
-        self._velocities: ...
+        #raise NotImplementedError
+        self._velocities: dict[Variable, torch.Tensor] = dict.fromkeys(parameters, torch.tensor(0, dtype=torch.float16))
 
         # ENDTODO
         ########################################
@@ -44,7 +44,19 @@ class SGD(Optimizer):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+        # move device to GPU if available
+        for parameter in self.parameters:
+            parameter.data = parameter.data.to(device)
+            parameter.grad = parameter.grad.to(device)
+
+        for parameter in self.parameters:
+            if parameter.grad is None:
+                continue
+            grad = parameter.grad + self.weight_decay * parameter.data
+            self._velocities[parameter] = self.momentum * self._velocities[parameter] - self.learning_rate * grad
+            parameter.data = parameter.data + self._velocities[parameter]
 
         # ENDTODO
         ########################################
@@ -71,10 +83,9 @@ class Adam(Optimizer):
         ########################################
         # TODO: init _num_steps to zero, _m to zeros, _v to zeros
 
-        raise NotImplementedError
-        self._num_steps = ...
-        self._m: dict[Variable, torch.Tensor] = ...
-        self._v: dict[Variable, torch.Tensor] = ...
+        self._num_steps = 0
+        self._m: dict[Variable, torch.Tensor] = dict.fromkeys(parameters, torch.tensor(0, dtype=torch.float16))
+        self._v: dict[Variable, torch.Tensor] = dict.fromkeys(parameters, torch.tensor(0, dtype=torch.float16))
 
         # ENDTODO
         ########################################
@@ -83,7 +94,16 @@ class Adam(Optimizer):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        self._num_steps += 1
+        for parameter in self.parameters:
+            if parameter.grad is None:
+                continue
+            grad = parameter.grad + self.weight_decay * parameter.data
+            self._m[parameter] = self.beta1 * self._m[parameter] + (1 - self.beta1) * grad
+            self._v[parameter] = self.beta2 * self._v[parameter] + (1 - self.beta2) * (grad ** 2)
+            m = self._m[parameter] / (1 - (self.beta1 ** self._num_steps))
+            v = self._v[parameter] / (1 - (self.beta2 ** self._num_steps))
+            parameter.data -= self.learning_rate * (m / (torch.sqrt(v) + self.eps))
 
         # ENDTODO
         ########################################

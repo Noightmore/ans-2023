@@ -74,6 +74,12 @@ class Linear(Function):
         ########################################
         # TODO: implement
 
+        # move tensors to model device
+        doutput = doutput.to(device=torch.device('cuda'))
+        cache = tuple([i.to(device=torch.device('cuda')) for i in cache])
+
+
+
         input, weight = cache
         dweight = torch.mm(input.t(), doutput)
         dbias = torch.sum(doutput, axis=0)
@@ -121,6 +127,11 @@ class Sigmoid(Function):
         ########################################
         # TODO: implement
 
+        # set all tensors to model device if cuda is available
+        if torch.cuda.is_available():
+            doutput = doutput.to(device=torch.device('cuda'))
+            cache = tuple([i.to(device=torch.device('cuda')) for i in cache])
+
         input = cache[0]
         dinput = doutput * input * (1 - input)
 
@@ -145,6 +156,12 @@ class SoftmaxCrossEntropy(Function):
 
         ########################################
         # TODO: implement
+
+        # set all tensors to model device if cuda is available
+        if torch.cuda.is_available():
+            scores = scores.to(device=torch.device('cuda'))
+            targets = targets.to(device=torch.device('cuda'))
+
 
         maxs, _ = torch.max(scores, dim=1)
         scores = scores - maxs.unsqueeze(1)
@@ -299,7 +316,20 @@ class Dropout(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        # set all tensors to model device if cuda is available
+        if torch.cuda.is_available():
+            input = input.to(device=torch.device('cuda'))
+            #print(input.device)
+
+        m = torch.rand(input.shape[0], input.shape[1])
+        if training:
+            # move tensors to model device
+            if torch.cuda.is_available():
+                m = m.to(device=torch.device('cuda'))
+            output = torch.where(m >= p, input / (1-p), 0)
+        else:
+            output = input.clone()
+        cache = (m, p, training)
 
         # ENDTODO
         ########################################
@@ -319,7 +349,11 @@ class Dropout(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        m, p, training = cache
+        if training:
+            dinput = torch.where(m >= p, doutput / (1-p), 0)
+        else:
+            dinput = doutput.clone()
 
         # ENDTODO
         ########################################
@@ -359,7 +393,26 @@ class BatchNorm1d(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        N = input.shape[0]
+        cache = (gamma, eps, training)
+        if training:
+            mi = torch.mean(input, dim=0)
+            var = torch.var(input, dim=0, unbiased=False)
+            x = (input-mi.unsqueeze(0)) / torch.sqrt(var.unsqueeze(0)+eps)
+            if running_mean is not None:
+                running_mean[...] = momentum * running_mean + (1-momentum) * mi
+            if running_var is not None:
+                running_var[...] = momentum * running_var + (1-momentum) * N/(N-1) * var
+            cache += (var,)
+        else:
+            x = (input - running_mean.unsqueeze(0)) / torch.sqrt(running_var.unsqueeze(0) + eps)
+            cache += (running_var,)
+
+        if gamma is not None:
+            output = x * gamma + beta
+        else:
+            output = x
+        cache += (x,)
 
         # ENDTODO
         ########################################
@@ -379,7 +432,19 @@ class BatchNorm1d(Function):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        gamma, eps, training, var, x = cache
+        N = x.shape[0]
+        dgamma = torch.sum(doutput * x, dim=0)
+        dbeta = torch.sum(doutput, dim=0)
+        if training:
+            dinput = gamma / torch.sqrt(var + eps) * (doutput - dbeta/N - x * (dgamma/N))
+        else:
+            dinput = (gamma / torch.sqrt(var.unsqueeze(0) + eps)) * doutput
+
+        # ENDTODO
+        ########################################
+
+        return dinput, dgamma, dbeta
 
         # ENDTODO
         ########################################
@@ -609,3 +674,5 @@ class MaxPool2d(Function):
         ########################################
 
         return dinput,
+
+#%%
