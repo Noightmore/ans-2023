@@ -35,6 +35,18 @@ class SGD(Optimizer):
         # TODO: init _velocities to zeros
 
         #raise NotImplementedError
+
+        # # move device to GPU if available
+        # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        #
+        # # move device to GPU if available
+        # for parameter in self.parameters:
+        #     if parameter.grad is None:
+        #         continue
+        #
+        #     parameter.data = parameter.data.to(device)
+        #     parameter.grad = parameter.grad.to(device)
+
         self._velocities: dict[Variable, torch.Tensor] = dict.fromkeys(parameters, torch.tensor(0, dtype=torch.float16))
 
         # ENDTODO
@@ -44,12 +56,12 @@ class SGD(Optimizer):
         ########################################
         # TODO: implement
 
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-        # move device to GPU if available
-        for parameter in self.parameters:
-            parameter.data = parameter.data.to(device)
-            parameter.grad = parameter.grad.to(device)
+        # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        #
+        # # move device to GPU if available
+        # for parameter in self.parameters:
+        #     parameter.data = parameter.data.to(device)
+        #     parameter.grad = parameter.grad.to(device)
 
         for parameter in self.parameters:
             if parameter.grad is None:
