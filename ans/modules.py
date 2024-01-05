@@ -328,7 +328,8 @@ class Flatten(Module):
         ########################################
         # TODO: implement
 
-        raise NotImplementedError
+        temp = torch.prod(torch.tensor(x.data.shape[1:])).item()
+        return x.reshape(x.data.shape[0], temp)
 
         # ENDTODO
         ########################################
