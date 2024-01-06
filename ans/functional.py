@@ -54,6 +54,9 @@ class Linear(Function):
         ########################################
         # TODO: implement
 
+        # convert input to tensor if it is not already
+        #if not torch.is_tensor(input):
+        #    input = torch.tensor(input)
         output = torch.mm(input, weight) + bias
         cache = (input, weight)
         # ENDTODO
@@ -571,28 +574,18 @@ class Conv2d(Function):
 
         input, output, bias, weight, stride, padding, dilation, groups = cache
         output_padding = 0
-
         if stride > 1:
             o_pad_h = int(input.shape[2] - (doutput.shape[2] - 1) * stride + 2 * padding - (weight.shape[2] - 1) * dilation - 1)
             o_pad_w = int(input.shape[3] - (doutput.shape[3] - 1) * stride + 2 * padding - (weight.shape[3] - 1) * dilation - 1)
             output_padding = (o_pad_h, o_pad_w)
-        dinput = torch.nn.functional.conv_transpose2d(input=doutput,
-                                                      weight=weight,
-                                                      stride=stride,
-                                                      padding=padding,
-                                                      dilation=dilation,
-                                                      output_padding=output_padding,
-                                                      groups=groups)
-
+        dinput = torch.nn.functional.conv_transpose2d(input=doutput, weight=weight,
+                                                      stride=stride, padding=padding, dilation=dilation,
+                                                      output_padding=output_padding, groups=groups)
         dbias = doutput.sum(dim=[0, 2, 3])
-        dweight = torch.nn.functional.conv2d(input=input.transpose(0, 1),
-                                             weight=doutput.transpose(0, 1),
-                                             stride=dilation,
-                                             padding=padding,
-                                             dilation=stride,
-                                             groups=groups).transpose(0, 1)
-        k = weight.shape[2]
-        dweight = dweight[:, :, 0:k, 0:k]
+        dweight = torch.nn.functional.conv2d(input=input.transpose(0, 1), weight=doutput.transpose(0, 1),
+                                             stride=dilation, padding=padding, dilation=stride, groups=groups).transpose(0, 1)
+        K = weight.shape[2]
+        dweight = dweight[:, :, 0:K, 0:K]
 
         # ENDTODO
         ########################################

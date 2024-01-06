@@ -211,20 +211,17 @@ class Variable:
         ########################################
         # TODO: implement
 
+        nodes = self.predecessors()[::-1]
         if dout is None:
             dout = torch.ones(self.data.size())
-
-        nodes = self.predecessors()[::-1]
         nodes[0].grad = dout
 
         while nodes:
             node = nodes.pop(0)
             if not node.grad_fn:
                 continue
-
             grads = list(node.grad_fn(node.grad)) if type(node.grad_fn(node.grad)) == tuple else [node.grad_fn(node.grad)]
             parents = list(node.parents) if type(node.parents) == tuple else [node.parents]
-
             for grad, parent in zip(grads, parents):
                 parent.grad = grad if parent.grad is None else parent.grad + grad
 
