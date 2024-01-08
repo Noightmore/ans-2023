@@ -1,8 +1,6 @@
 import functools
 from typing import Any, Optional, Union
-
 import torch
-
 from ans.autograd import Variable
 
 
@@ -53,10 +51,6 @@ class Linear(Function):
 
         ########################################
         # TODO: implement
-
-        # convert input to tensor if it is not already
-        #if not torch.is_tensor(input):
-        #    input = torch.tensor(input)
         output = torch.mm(input, weight) + bias
         cache = (input, weight)
         # ENDTODO
@@ -73,24 +67,14 @@ class Linear(Function):
         Returns:
             tuple of gradient w.r.t. input, weight, bias in this order
         """
-
         ########################################
         # TODO: implement
-
-        # move tensors to model device
-        doutput = doutput.to(device=torch.device('cuda'))
-        cache = tuple([i.to(device=torch.device('cuda')) for i in cache])
-
-
-
         input, weight = cache
         dweight = torch.mm(input.t(), doutput)
         dbias = torch.sum(doutput, axis=0)
         dinput = torch.mm(doutput, weight.t())
-
         # ENDTODO
         ########################################
-
         return dinput, dweight, dbias
 
 
@@ -108,10 +92,8 @@ class Sigmoid(Function):
 
         ########################################
         # TODO: implement
-
         output = 1 / (1 + torch.exp(-input))
         cache = (output,)
-
         # ENDTODO
         ########################################
 
@@ -129,15 +111,8 @@ class Sigmoid(Function):
 
         ########################################
         # TODO: implement
-
-        # set all tensors to model device if cuda is available
-        if torch.cuda.is_available():
-            doutput = doutput.to(device=torch.device('cuda'))
-            cache = tuple([i.to(device=torch.device('cuda')) for i in cache])
-
         input = cache[0]
         dinput = doutput * input * (1 - input)
-
         # ENDTODO
         ########################################
 
@@ -147,7 +122,7 @@ class Sigmoid(Function):
 class SoftmaxCrossEntropy(Function):
 
     @staticmethod
-    def forward(scores: torch.Tensor, targets: torch.Tensor, ignore_index: int = -1) -> tuple[torch.Tensor, tuple]:
+    def forward(scores: torch.Tensor, targets: torch.Tensor) -> tuple[torch.Tensor, tuple]:
         """
         Args:
             scores: shape (num_samples, num_out)
@@ -159,19 +134,11 @@ class SoftmaxCrossEntropy(Function):
 
         ########################################
         # TODO: implement
-
-        # set all tensors to model device if cuda is available
-        if torch.cuda.is_available():
-            scores = scores.to(device=torch.device('cuda'))
-            targets = targets.to(device=torch.device('cuda'))
-
-
         maxs, _ = torch.max(scores, dim=1)
         scores = scores - maxs.unsqueeze(1)
         scoresOH = scores[torch.arange(scores.shape[0]), targets]
         output = torch.mean(-scoresOH + torch.logsumexp(scores, dim=1))
         cache = (scores, targets)
-
         # ENDTODO
         ########################################
 
@@ -186,10 +153,8 @@ class SoftmaxCrossEntropy(Function):
         Returns:
             tuple of gradients w.r.t. scores (single-element tuple)
         """
-
         ########################################
         # TODO: implement
-
         scores, targets = cache
         exp_scores = torch.exp(scores)
         dscores = exp_scores / torch.sum(exp_scores, dim=1).unsqueeze(1)
@@ -217,11 +182,9 @@ class ReLU(Function):
         """
 
         ########################################
-        # TODO: implement
 
         output = torch.where(input > 0, input, 0)
         cache = output,
-
         # ENDTODO
         ########################################
 
@@ -239,10 +202,8 @@ class ReLU(Function):
 
         ########################################
         # TODO: implement
-
         input = cache[0]
         dinput = torch.where(input > 0, doutput, 0)
-
         # ENDTODO
         ########################################
 
@@ -318,22 +279,12 @@ class Dropout(Function):
 
         ########################################
         # TODO: implement
-
-        # set all tensors to model device if cuda is available
-        if torch.cuda.is_available():
-            input = input.to(device=torch.device('cuda'))
-            #print(input.device)
-
         m = torch.rand(input.shape[0], input.shape[1])
-        if training:
-            # move tensors to model device
-            if torch.cuda.is_available():
-                m = m.to(device=torch.device('cuda'))
-            output = torch.where(m >= p, input / (1-p), 0)
-        else:
+        if not training:
             output = input.clone()
+        else:
+            output = torch.where(m >= p, input / (1-p), 0)
         cache = (m, p, training)
-
         # ENDTODO
         ########################################
 
@@ -351,7 +302,6 @@ class Dropout(Function):
 
         ########################################
         # TODO: implement
-
         m, p, training = cache
         if training:
             dinput = torch.where(m >= p, doutput / (1-p), 0)
@@ -395,7 +345,6 @@ class BatchNorm1d(Function):
 
         ########################################
         # TODO: implement
-
         N = input.shape[0]
         cache = (gamma, eps, training)
         if training:
@@ -416,7 +365,6 @@ class BatchNorm1d(Function):
         else:
             output = x
         cache += (x,)
-
         # ENDTODO
         ########################################
 
@@ -426,7 +374,7 @@ class BatchNorm1d(Function):
     def backward(doutput: torch.Tensor, cache=()) -> tuple[torch.Tensor, ...]:
         """
         Args:
-            doutput: gradient w.r.t. output of the forward pass; shape (num_samples, num_features)
+            doutput: gradient w.r.t. output of the forward pass; shape (num_samples, ...)
             cache: cache from the forward pass
         Returns:
             tuple of gradients w.r.t. input (single-element tuple)
@@ -434,7 +382,6 @@ class BatchNorm1d(Function):
 
         ########################################
         # TODO: implement
-
         gamma, eps, training, var, x = cache
         N = x.shape[0]
         dgamma = torch.sum(doutput * x, dim=0)
@@ -443,11 +390,6 @@ class BatchNorm1d(Function):
             dinput = gamma / torch.sqrt(var + eps) * (doutput - dbeta/N - x * (dgamma/N))
         else:
             dinput = (gamma / torch.sqrt(var.unsqueeze(0) + eps)) * doutput
-
-        # ENDTODO
-        ########################################
-
-        return dinput, dgamma, dbeta
 
         # ENDTODO
         ########################################
@@ -470,7 +412,6 @@ class BatchNorm2d(Function):
     ) -> tuple[torch.Tensor, tuple]:
         """
         Spatial BatchNorm for convolutional networks
-
         Args:
             input: shape (num_samples, num_channels, height, width)
             gamma: shape (num_channels,)
@@ -487,9 +428,14 @@ class BatchNorm2d(Function):
 
         ########################################
         # TODO: implement
-
-        raise NotImplementedError
-
+        N, C, H, W = input.shape
+        input = input.transpose(1, 3)
+        input = input.reshape((N*H*W), C)
+        output, cache = BatchNorm1d.forward(input=input, gamma=gamma, beta=beta,
+                                            running_mean=running_mean, running_var=running_var,
+                                            momentum=momentum, eps=eps, training=training)
+        output = output.reshape(N, W, H, C)
+        output = output.transpose(1, 3)
         # ENDTODO
         ########################################
 
@@ -507,8 +453,12 @@ class BatchNorm2d(Function):
 
         ########################################
         # TODO: implement
-
-        raise NotImplementedError
+        N, C, H, W = doutput.shape
+        doutput = doutput.transpose(1, 3)
+        doutput = doutput.reshape((N * H * W), C)
+        dinput, dgamma, dbeta = BatchNorm1d.backward(doutput, cache)
+        dinput = dinput.reshape(N, W, H, C)
+        dinput = dinput.transpose(1, 3)
 
         # ENDTODO
         ########################################
@@ -537,14 +487,12 @@ class Conv2d(Function):
             padding: how much should the input be padded on each side by zeroes
             dilation: see torch.nn.functional.conv2d
             groups: see torch.nn.functional.conv2d
-
         Returns:
             output: shape (num_samples, num_filters, output_height, output_width)
             cache: tuple of intermediate results to use in backward
         """
         ########################################
         # TODO: implement
-
         output = torch.nn.functional.conv2d(input=input,
                                             weight=weight,
                                             bias=bias,
@@ -553,7 +501,6 @@ class Conv2d(Function):
                                             dilation=dilation,
                                             groups=groups)
         cache = (input, output, bias, weight, stride, padding, dilation, groups)
-
         # ENDTODO
         ########################################
 
@@ -586,7 +533,6 @@ class Conv2d(Function):
                                              stride=dilation, padding=padding, dilation=stride, groups=groups).transpose(0, 1)
         K = weight.shape[2]
         dweight = dweight[:, :, 0:K, 0:K]
-
         # ENDTODO
         ########################################
 
@@ -598,7 +544,6 @@ class MaxPool2d(Function):
     @staticmethod
     def forward(input: torch.Tensor, window_size: int = 2) -> tuple[torch.Tensor, tuple]:
         """
-
         Args:
             input: shape (num_samples, num_channels, height, width)
             window_size: size of pooling window
@@ -609,23 +554,15 @@ class MaxPool2d(Function):
 
         ########################################
         # TODO: implement
+        N, C, M1, M2 = input.shape
+        input = input[:, :, 0:(M1 - M1 % window_size), :]
+        input = input[:, :, :, 0:(M2 - M2 % window_size)]
 
-        num_samples, num_channels, height, width = input.shape
-        input = input[:, :, 0:(height - height % window_size), :]
-        input = input[:, :, :, 0:(width - width % window_size)]
-
-        output = torch.reshape(input, (num_samples, num_channels,
-                                       input.shape[2]//window_size,
-                                       window_size, input.shape[3]//window_size, window_size))
-
+        output = torch.reshape(input, (N, C, input.shape[2]//window_size, window_size, input.shape[3]//window_size, window_size))
         output = output.transpose(3, 4)
-        output = torch.reshape(output, (num_samples, num_channels,
-                                        input.shape[2]//window_size,
-                                        input.shape[3]//window_size, window_size**2))
-
+        output = torch.reshape(output, (N, C, input.shape[2]//window_size, input.shape[3]//window_size, window_size**2))
         output, idx = torch.max(output, dim=4)
-        cache = ((num_samples, num_channels, height, width), window_size, idx, output)
-
+        cache = ((N, C, M1, M2), window_size, idx, output)
         # ENDTODO
         ########################################
 
@@ -643,29 +580,20 @@ class MaxPool2d(Function):
 
         ########################################
         # TODO: implement
-
         input_shape, window_size, idx, output = cache
 
-        num_samples, num_channels, height, width = input_shape
+        N, C, M1, M2 = input_shape
 
-        dinput = torch.zeros(num_samples, num_channels, height//window_size,
-                             width//window_size, window_size ** 2,
-                             dtype=doutput.dtype).to(device=doutput.device)
-
+        dinput = torch.zeros(N, C, M1//window_size, M2//window_size, window_size ** 2, dtype=doutput.dtype) \
+            .to(device = doutput.device)
         dinput = dinput.scatter_(-1, idx.unsqueeze(-1), 1)
         dinput[dinput == 1] = doutput.flatten()
-        dinput = torch.reshape(dinput, (num_samples, num_channels, height//window_size,
-                                        width//window_size, window_size, window_size))
-
+        dinput = torch.reshape(dinput, (N, C, M1//window_size, M2//window_size, window_size, window_size))
         dinput = dinput.transpose(3, 4)
-        dinput = torch.reshape(dinput, (num_samples, num_channels,
-                                        height - height % window_size, width - width%window_size))
-
-        dinput = torch.nn.functional.pad(dinput, (0, width-dinput.shape[3], 0, height-dinput.shape[2]))
+        dinput = torch.reshape(dinput, (N, C, M1 - M1 % window_size, M2 - M2%window_size))
+        dinput = torch.nn.functional.pad(dinput, (0, M2-dinput.shape[3], 0, M1-dinput.shape[2]))
 
         # ENDTODO
         ########################################
 
         return dinput,
-
-#%%
